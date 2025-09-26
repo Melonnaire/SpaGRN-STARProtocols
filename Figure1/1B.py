@@ -2,32 +2,25 @@ import scanpy as sc
 import numpy as np
 import matplotlib.pyplot as plt
 
+adata_full = sc.read_h5ad('Mouse_brain_cell_bin.h5ad')
 
-adata = sc.read_h5ad('/dellfsqd2/ST_OCEAN/USER/liuxiaobin/project/SpaGRN/StarProtocol/Mouse_brain_cell_bin.h5ad')
-sc.pp.normalize_total(adata, target_sum=1e4)
-sc.pp.log1p(adata)
-sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
-sc.pp.scale(adata, max_value=10)
-sc.tl.pca(adata, svd_solver='arpack') 
-sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40) 
-sc.tl.umap(adata)
+sc.pp.normalize_total(adata_full, target_sum=1e4)
+sc.pp.log1p(adata_full)
+adata_full.raw = adata_full
 
-umap_coords = adata.obsm['X_umap']
-categories = adata.obs['annotation'].values
-if 'annotation_colors' in adata.uns:
-    category_colors = adata.uns['annotation_colors']
-else:
-    category_colors = None
+sc.pp.highly_variable_genes(adata_full, min_mean=0.0125, max_mean=3, min_disp=0.5)
+adata_full = adata_full[:, adata_full.var.highly_variable]
 
-unique_categories = np.unique(categories)
+sc.pp.scale(adata_full, max_value=10)
+sc.tl.pca(adata_full, svd_solver='arpack')
+sc.pp.neighbors(adata_full, n_neighbors=10, n_pcs=40)
+sc.tl.umap(adata_full)
 
-plt.figure(figsize=(8, 6))
-for i, category in enumerate(unique_categories):
-    indices = np.where(categories == category)[0]
-    points = umap_coords[indices]
-    plt.scatter(points[:, 0], points[:, 1], c=[category_colors[i]], label=f'{category}', s=1, alpha=0.6)
+fig, ax = plt.subplots(figsize=(12, 7))
+sc.pl.umap(adata_full, color='annotation', legend_loc='right margin', show=False, ax=ax)
 
-#plt.legend(title='Annotation', bbox_to_anchor=(1.05, 1), loc='upper left')
-plt.xlabel('UMAP1')
-plt.ylabel('UMAP2')
+plt.tight_layout()
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+plt.rcParams["font.family"] = "Arial"
 plt.show()
