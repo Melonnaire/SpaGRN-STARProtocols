@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-adata = sc.read_h5ad('../Data/Mouse_brain_cell_bin.h5ad')
+adata = sc.read_h5ad('Mouse_brain_cell_bin.h5ad') # Downloaded from https://db.cngb.org/stomics/mosta/download/ 
 positions = adata.obsm['spatial']
 annotations = adata.obs['annotation'].values
 unique_categories = np.unique(annotations)
